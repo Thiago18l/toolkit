@@ -1,14 +1,12 @@
 #!/bin/bash
 # Author: Thiago Lopes
 # Shell Script para Backup do Banco de dados.
+PATH_ENV=$(find ~/dev/toolkit-smart -name .env -print)
+source ${PATH_ENV}
+PORT="4308"
 
-source .env
-USER=
-PASS=
-HOST=
-
-DESTINO="" # /home/username/backups/db/
-EMAIL="" # email para notification
+DESTINO="$HOME/database/" # /home/username/backups/db/
+EMAIL="thiago.lopes.dev@gmail.com" # email para notification
 DAYS=7
 
 # Binarios linux necessarios
@@ -26,15 +24,16 @@ install -d ${BDB}
 
 # DB skip
 SKIP="information_schema
-another_one_db" # Caso seja necessario pular algum database
+#mysql50#my.cnf
+performance_schema" # Caso seja necessario pular algum database
 
 ## Para caso de fazer o backup em um host remoto.
 #mysqldump --opt --protocol=TCP --user=${USER} --password=${PASS} --host=${DBSERVER} ${DATABASE} > ${FILE}
 
 # Para pegar todos os bancos.
-DATABASES="$($MYSQL -h $HOST -u $USER -p$PASS -Bse "show databases")"
+DATABASES="$($MYSQL -h $HOSTDB -u $USERDB -p$PASS -P${PORT} -Bse "show databases")"
 
-for db in ${BDB}
+for db in ${DATABASES}
 do
     skipdb=-1
     if [ "$SKIP" != "" ]; then
@@ -44,7 +43,8 @@ do
     fi
 
     if [ "${skipdb}" == "-1" ]; then
-        $MYSQLDUMP -h $HOST -u $USER -p$PASS $db > $FILE
+        FILE="${BDB}/backup_${db}_${DATA}.sql"
+        $MYSQLDUMP --opt --protocol=TCP --column-statistics=0 --single-transaction --skip-lock-tables --user=${USERDB} --password=${PASS} --host=${HOSTDB} --port=${PORT} $db > $FILE
     fi
 done
 
