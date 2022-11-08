@@ -1,5 +1,5 @@
 #!/bin/bash
-# Script for use only in RHEL based OS
+# Script for use only in UBuntu based OS
 
 
 BINARY_PATH="wget https://www.percona.com/downloads/XtraBackup/Percona-XtraBackup-2.4.20/\
