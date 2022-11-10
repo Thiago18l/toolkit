@@ -7,7 +7,7 @@ binary/debian/stretch/x86_64/percona-xtrabackup-24_2.4.20-1.stretch_amd64.deb"
 
 
 APT=$(which apt)
-[[ -z ${APT} ]] && { echo "INFO: Yum not found in this OS"; exit 1; }
+[[ -z ${APT} ]] && { echo "INFO: APT not found in this OS"; exit 1; }
 
 
 # Install XTRABACKUP
