@@ -32,7 +32,7 @@ rm -rf $DATE
 BACKUP_GZIP=$(find $BACKUP_ROOT -name $DATE.tar.gz -type f -print)
 GCLOUD=$(which gcloud)
 BUCKET_NAME=""
-[[ -Z ${GCLOUD} ]] && { echo "INFO - $(date +"%d-%m-%Y-%H-%M-%S"): GCLOUD CLI it's not installed" ; } 2>&1 | tee -a $LOG_ERROR_DIR/${FILE_LOG} && exit 1;
+[[ -z ${GCLOUD} ]] && { echo "INFO - $(date +"%d-%m-%Y-%H-%M-%S"): GCLOUD CLI it's not installed" ; } 2>&1 | tee -a $LOG_ERROR_DIR/${FILE_LOG} && exit 1;
 if [ -d $BACKUP_ROOT ] ; then
     $GCLOUD storage cp $BACKUP_GZIP gs://$BUCKET_NAME/ 2>&1 | tee -a $LOG_ERROR_DIR/${FILE_LOG}
 else
