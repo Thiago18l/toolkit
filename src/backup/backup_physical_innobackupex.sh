@@ -22,9 +22,38 @@ INNOBACKUPEX=$(which innobackupex)
 echo -e "INFO - $(date +"%d-%m-%Y-%H-%M-%S"): BACKUP INICIADO AS ${BACKUP_START}" 2>&1 | tee -a $LOG_ERROR_DIR/${FILE_LOG}
 ${INNOBACKUPEX} --user=$USER_DB --password=$PASS $BACKUP_DIR --no-timestamp --parallel=12 --compress --compress-threads=12 --defaults-file=/etc/my.cnf 2>&1 | tee -a $LOG_ERROR_DIR/$FILE_LOG
 
+
 cd $BACKUP_ROOT
 tar -cf $DATE.tar $DATE
-$GZIP -9 $DATE.tar
+$GZIP -7 $DATE.tar
 rm -rf $DATE
 
+
+BACKUP_GZIP=$(find $BACKUP_ROOT -name $DATE.tar.gz -type f -print)
+GCLOUD=$(which gcloud)
+BUCKET_NAME=""
+[[ -Z ${GCLOUD} ]] && { echo "INFO - $(date +"%d-%m-%Y-%H-%M-%S"): GCLOUD CLI it's not installed" ; } 2>&1 | tee -a $LOG_ERROR_DIR/${FILE_LOG} && exit 1;
+if [ -d $BACKUP_ROOT ] ; then
+    $GCLOUD storage cp $BACKUP_GZIP gs://$BUCKET_NAME/ 2>&1 | tee -a $LOG_ERROR_DIR/${FILE_LOG}
+else
+    echo -e "INFO - $(date +"%d-%m-%Y-%H-%M-%S"): Folder not found"
+    exit 1;
+fi
+
+
 echo -e "INFO - $(date +"%d-%m-%Y-%H-%M-%S"): BACKUP FINALIZADO AS $(date +"%d-%m-%Y-%H-%M-%S")" | tee -a $LOG_ERROR_DIR/$FILE_LOG
+
+# Removing old backups
+echo -e "INFO - $(date +"%d-%m-%Y-%H-%M-%S"): Removing OLD Backups"
+OLD_BACKUP=$(find $BACKUP_ROOT -name *.tar.gz -type f -mtime +1 -print)
+[[ -z $OLD_BACKUP ]] && { echo "INFO - $(date +"%d-%m-%Y-%H-%M-%S"): FILE .tar.gz not found in this folder"; } 2>&1 | tee -a $LOG_ERROR_DIR/${FILE_LOG} && exit 1;
+echo -e "INFO - $(date +"%d-%m-%Y-%H-%M-%S"): Deleting ${OLD_BACKUP}" 2>&1 | tee -a $LOG_ERROR_DIR/${FILE_LOG}
+find $BACKUP_ROOT -name *.tar.gz -type f -mtime +1 -delete 2>&1 | tee -a $LOG_ERROR_DIR/${FILE_LOG}
+
+# Verificando se foi apagado
+FIND_BCKUP=$(find $BACKUP_ROOT -name *.tar.gz -type f -mtime +1 -print)
+if [ -z $FIND_BCKUP ] ; then
+    echo -e "INFO - $(date +"%d-%m-%Y-%H-%M-%S"): Not found any backups older than one day" 2>&1 | tee -a $LOG_ERROR_DIR/${FILE_LOG}
+else
+    echo -e "INFO - $(date +"%d-%m-%Y-%H-%M-%S"): Found a backup older than one day ${FIND_BCKUP}" 2>&1 | tee -a $LOG_ERROR_DIR/${FILE_LOG}
+fi
