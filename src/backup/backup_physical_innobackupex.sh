@@ -7,7 +7,7 @@ PASS=
 BACKUP_ROOT="./backup/database/"
 DATE=$(date +"%d-%m-%Y-%H-%M-%S")
 BACKUP_DIR=${BACKUP_ROOT}${DATE}
-
+install -d $BACKUP_DIR
 
 FILE_LOG="$(date +"%d-%m-%Y-%H-%M-%S")-LOG-BACKUP.log"
 LOG_ERROR_DIR="/tmp/logs-db-backup"
@@ -20,7 +20,7 @@ INNOBACKUPEX=$(which innobackupex)
 [[ -z ${INNOBACKUPEX} ]] && { echo "INFO - $(date +"%d-%m-%Y-%H-%M-%S"): Innobackupex not found in this OS"; } 2>&1 | tee -a $LOG_ERROR_DIR/${FILE_LOG} && exit 1;
 
 echo -e "INFO - $(date +"%d-%m-%Y-%H-%M-%S"): BACKUP INICIADO AS ${BACKUP_START}" 2>&1 | tee -a $LOG_ERROR_DIR/${FILE_LOG}
-${INNOBACKUPEX} --user=$USER_DB --password=$PASS $BACKUP_DIR --no-timestamp --parallel=12 --compress --compress-threads=12 --defaults-file=/etc/my.cnf 2>&1 | tee -a $LOG_ERROR_DIR/$FILE_LOG
+${INNOBACKUPEX} --user=$USER_DB --password=$PASS --no-timestamp --parallel=12 --compress --compress-threads=12 $BACKUP_DIR 2>&1 | tee -a $LOG_ERROR_DIR/$FILE_LOG
 
 
 cd $BACKUP_ROOT
@@ -31,7 +31,7 @@ rm -rf $DATE
 
 BACKUP_GZIP=$(find $BACKUP_ROOT -name $DATE.tar.gz -type f -print)
 GCLOUD=$(which gcloud)
-BUCKET_NAME=""
+BUCKET_NAME="legado-bucket"
 [[ -z ${GCLOUD} ]] && { echo "INFO - $(date +"%d-%m-%Y-%H-%M-%S"): GCLOUD CLI it's not installed" ; } 2>&1 | tee -a $LOG_ERROR_DIR/${FILE_LOG} && exit 1;
 if [ -d $BACKUP_ROOT ] ; then
     $GCLOUD storage cp $BACKUP_GZIP gs://$BUCKET_NAME/ 2>&1 | tee -a $LOG_ERROR_DIR/${FILE_LOG}
