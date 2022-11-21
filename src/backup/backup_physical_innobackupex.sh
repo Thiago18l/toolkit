@@ -24,8 +24,8 @@ ${INNOBACKUPEX} --user=$USER_DB --password=$PASS --no-timestamp --parallel=12 --
 
 
 cd $BACKUP_ROOT
-tar -cf $DATE.tar $DATE
-rm -rf $DATE
+tar -cvf $DATE.tar $DATE 2>&1 | tee -a $LOG_ERROR_DIR/${FILE_LOG}
+rm -rf $DATE 2>&1
 
 
 BACKUP_GZIP=$(find $BACKUP_ROOT -name $DATE.tar -type f -print)
