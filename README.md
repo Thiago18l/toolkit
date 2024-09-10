@@ -1,6 +1,4 @@
-<h1 align="center">
-  <img src="https://smartgps.com.br/static/media/logo.4d08aec9.png" alt="SmartGPS" width="200">
-</h1>
+
 
 <p align="center"><i>Toolkit repositório para automações</i></p>
 
